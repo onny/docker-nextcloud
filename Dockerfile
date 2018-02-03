@@ -68,7 +68,7 @@ RUN set -ex \
 
 # Download Nextcloud
   && cd /tmp \
-  && wget -q https://github.com/nextcloud/server/archive/v13.0.0RC4.tar.gz
+  && wget -q https://github.com/nextcloud/server/archive/v13.0.0RC4.tar.gz \
 
 # Extract
   && tar xjf v13.0.0RC4.tar.gz --strip-components=1 -C /opt/nextcloud \
