@@ -2,7 +2,7 @@ FROM php:7.1-fpm-alpine
 MAINTAINER Simon Erhardt <hello@rootlogin.ch>
 
 ARG NEXTCLOUD_GPG="2880 6A87 8AE4 23A2 8372  792E D758 99B9 A724 937A"
-ARG NEXTCLOUD_VERSION=12.0.5
+ARG NEXTCLOUD_VERSION=13.0.0RC4
 ARG UID=1501
 ARG GID=1501
 
@@ -68,24 +68,10 @@ RUN set -ex \
 
 # Download Nextcloud
   && cd /tmp \
-  && NEXTCLOUD_TARBALL="nextcloud-${NEXTCLOUD_VERSION}.tar.bz2" \
-  && wget -q https://download.nextcloud.com/server/releases/${NEXTCLOUD_TARBALL} \
-  && wget -q https://download.nextcloud.com/server/releases/${NEXTCLOUD_TARBALL}.sha256 \
-  && wget -q https://download.nextcloud.com/server/releases/${NEXTCLOUD_TARBALL}.asc \
-  && wget -q https://nextcloud.com/nextcloud.asc \
-
-# Verify checksum
-  && echo "Verifying both integrity and authenticity of ${NEXTCLOUD_TARBALL}..." \
-  && CHECKSUM_STATE=$(echo -n $(sha256sum -c ${NEXTCLOUD_TARBALL}.sha256) | tail -c 2) \
-  && if [ "${CHECKSUM_STATE}" != "OK" ]; then echo "Warning! Checksum does not match!" && exit 1; fi \
-  && gpg --import nextcloud.asc \
-  && FINGERPRINT="$(LANG=C gpg --verify ${NEXTCLOUD_TARBALL}.asc ${NEXTCLOUD_TARBALL} 2>&1 | sed -n "s#Primary key fingerprint: \(.*\)#\1#p")" \
-  && if [ -z "${FINGERPRINT}" ]; then echo "Warning! Invalid GPG signature!" && exit 1; fi \
-  && if [ "${FINGERPRINT}" != "${NEXTCLOUD_GPG}" ]; then echo "Warning! Wrong GPG fingerprint!" && exit 1; fi \
-  && echo "All seems good, now unpacking ${NEXTCLOUD_TARBALL}..." \
+  && wget -q https://github.com/nextcloud/server/archive/v13.0.0RC4.tar.gz
 
 # Extract
-  && tar xjf ${NEXTCLOUD_TARBALL} --strip-components=1 -C /opt/nextcloud \
+  && tar xjf v13.0.0RC4.tar.gz --strip-components=1 -C /opt/nextcloud \
 # Remove nextcloud updater for safety
   && rm -rf /opt/nextcloud/updater \
   && rm -rf /tmp/* /root/.gnupg
