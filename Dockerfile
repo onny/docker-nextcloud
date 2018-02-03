@@ -71,7 +71,7 @@ RUN set -ex \
   && wget -q https://github.com/nextcloud/server/archive/v13.0.0RC4.tar.gz \
 
 # Extract
-  && tar xjf v13.0.0RC4.tar.gz --strip-components=1 -C /opt/nextcloud \
+  && tar xvf v13.0.0RC4.tar.gz --strip-components=1 -C /opt/nextcloud \
 # Remove nextcloud updater for safety
   && rm -rf /opt/nextcloud/updater \
   && rm -rf /tmp/* /root/.gnupg
