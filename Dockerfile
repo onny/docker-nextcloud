@@ -68,10 +68,24 @@ RUN set -ex \
 
 # Download Nextcloud
   && cd /tmp \
-  && wget -q https://github.com/nextcloud/server/archive/v13.0.0RC4.tar.gz \
+  && NEXTCLOUD_TARBALL="nextcloud-${NEXTCLOUD_VERSION}.tar.bz2" \
+  && wget -q https://download.nextcloud.com/server/prereleases/${NEXTCLOUD_TARBALL} \
+  && wget -q https://download.nextcloud.com/server/prereleases/${NEXTCLOUD_TARBALL}.sha256 \
+  && wget -q https://download.nextcloud.com/server/prereleases/${NEXTCLOUD_TARBALL}.asc \
+  && wget -q https://nextcloud.com/nextcloud.asc \
+
+# Verify checksum
+  && echo "Verifying both integrity and authenticity of ${NEXTCLOUD_TARBALL}..." \
+  && CHECKSUM_STATE=$(echo -n $(sha256sum -c ${NEXTCLOUD_TARBALL}.sha256) | tail -c 2) \
+  && if [ "${CHECKSUM_STATE}" != "OK" ]; then echo "Warning! Checksum does not match!" && exit 1; fi \
+  && gpg --import nextcloud.asc \
+  && FINGERPRINT="$(LANG=C gpg --verify ${NEXTCLOUD_TARBALL}.asc ${NEXTCLOUD_TARBALL} 2>&1 | sed -n "s#Primary key fingerprint: \(.*\)#\1#p")" \
+  && if [ -z "${FINGERPRINT}" ]; then echo "Warning! Invalid GPG signature!" && exit 1; fi \
+  && if [ "${FINGERPRINT}" != "${NEXTCLOUD_GPG}" ]; then echo "Warning! Wrong GPG fingerprint!" && exit 1; fi \
+  && echo "All seems good, now unpacking ${NEXTCLOUD_TARBALL}..." \
 
 # Extract
-  && tar xvf v13.0.0RC4.tar.gz --strip-components=1 -C /opt/nextcloud \
+  && tar xjf ${NEXTCLOUD_TARBALL} --strip-components=1 -C /opt/nextcloud \
 # Remove nextcloud updater for safety
   && rm -rf /opt/nextcloud/updater \
   && rm -rf /tmp/* /root/.gnupg
